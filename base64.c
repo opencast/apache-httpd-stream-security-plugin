@@ -6,6 +6,9 @@
 #include <string.h>
 #include <assert.h>
 
+/**
+ * Determine the length of the decoded message.
+ */
 size_t calc_decode_length(const char* b64input) { //Calculates the length of a decoded string
 	size_t len = strlen(b64input),
 	padding = 0;
@@ -18,9 +21,17 @@ size_t calc_decode_length(const char* b64input) { //Calculates the length of a d
 	return (len*3)/4 - padding;
 }
 
+/**
+ * Decodes a string into plain text.
+ * @param b64message
+ *          The Base 64 encoded message
+ * @param buffer
+ *          The pointer to assign the plain text result to.
+ * @param length
+ *          The length of the plain text result.
+ */
 int base_64_decode(char* b64message, uint8_t** buffer, size_t* length) { //Decodes a base64 encoded string
 	BIO *bio, *b64;
-    printf("The message to decode: %s length: %zd\n", b64message, strlen(b64message));
 	int decodeLen = calc_decode_length(b64message);
 	*buffer = (uint8_t*)malloc(decodeLen);
 
@@ -32,26 +43,6 @@ int base_64_decode(char* b64message, uint8_t** buffer, size_t* length) { //Decod
 	*length = BIO_read(bio, *buffer, strlen(b64message));
 	assert(*length == decodeLen); //length should equal decodeLen, else something went horribly wrong
 	BIO_free_all(bio);
-    printf("Decoded Length: %d", decodeLen);
 	return (0); //success
 }
 
-/* int base_64_encode(const unsigned char* buffer, size_t length, char** b64text) { //Encodes a binary safe base 64 string
-	BIO *bio, *b64;
-	BUF_MEM *bufferPtr;
-
-	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new(BIO_s_mem());
-	bio = BIO_push(b64, bio);
-
-	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Ignore newlines - write everything in one line
-	BIO_write(bio, buffer, length);
-	BIO_flush(bio);
-	BIO_get_mem_ptr(bio, &bufferPtr);
-	BIO_set_close(bio, BIO_NOCLOSE);
-	BIO_free_all(bio);
-
-	*b64text=(*bufferPtr).data;
-
-	return (0); //success
-}*/
