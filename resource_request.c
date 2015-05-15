@@ -21,6 +21,11 @@ struct QueryParameter
     char *value;
 };
 
+/**
+ * Find the length of the key in the query string parameter.
+ * @param inputString
+ *          The query string parameter.
+ */
 int find_key_length(char* inputString) {
     int keyLength;
     for (keyLength = 0; keyLength < strlen(inputString); keyLength++) {
@@ -31,6 +36,11 @@ int find_key_length(char* inputString) {
     return -1;
 }
 
+/**
+ * Get the key and value of a query string parameter.
+ * @param inputString
+ *          The query string parameter.
+ */
 struct QueryParameter get_query_string_parameter(char* inputString) {
     // Get the key.
     int keyLength = find_key_length(inputString);
@@ -50,6 +60,17 @@ struct QueryParameter get_query_string_parameter(char* inputString) {
     return qp;
 }
 
+/**
+ * Check that the user is authorized to get the resource from this request based on the policy.
+ * @param clientIp
+ *          The ip of the current client.
+ * @param resourceUri
+ *          The uri of the requested resource.
+ * @param keyCollection
+ *          The available keys configured.
+ * @param resourceRequest
+ *          The resource request to verify including the signature, keyid and policy.
+ */
 void verify_resource_request(char* clientIp, char* resourceUri, struct KeyCollection *keyCollection, struct ResourceRequest *resourceRequest) {
     time_t rawtime;
     time(&rawtime);
@@ -159,7 +180,6 @@ void get_resource_request_from_query_string(char* inputString, char* clientIp, c
             printf("Result of Getting Policy: '%d' > '%lld' less '%" JSON_INTEGER_FORMAT "' ip '%s' resource '%s'\n", result, resourceRequest->policy.date_greater_than, resourceRequest->policy.date_less_than, resourceRequest->policy.ip_address, resourceRequest->policy.resource);
             foundPolicy = true;
         } else if (strcmp("keyId", qp.key) == 0) {
-            printf("Found key id\n");
             resourceRequest->key_id = qp.value;
             printf("Got key id of '%s'\n", resourceRequest->key_id);
             foundKey = true;
@@ -188,9 +208,6 @@ void get_resource_request_from_query_string(char* inputString, char* clientIp, c
 void free_resource_request(struct ResourceRequest *resourceRequest) {
     if (resourceRequest->signature != NULL) {
         free(resourceRequest->signature);
-    }
-    if (resourceRequest->key_id != NULL) {
-        // free(resourceRequest->key_id);
     }
     free_policy(&resourceRequest->policy);
 }
