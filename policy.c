@@ -7,6 +7,12 @@
 
 #include <string.h>
 
+/**
+ * Populate the data for a Policy from the decoded_policy member of the Policy.
+ * @param policy
+ *          The policy that has the decoded_policy and will be populated.
+ * @return The HTTP response code.
+ */
 int get_policy_from_json(struct Policy *policy) {
     json_t *root;
     json_error_t error;
@@ -63,6 +69,12 @@ int get_policy_from_json(struct Policy *policy) {
     return WORKING;
 }
 
+/**
+ * Decode a policy from its base 64 encoding.
+ * @param encodedPolicy
+ *          The text of the base 64 encoded policy.
+ * @return The plain text policy.
+ */
 char* decode_policy(char* encodedPolicy) {
     char* base64DecodeOutput;
     size_t length;
@@ -74,6 +86,13 @@ char* decode_policy(char* encodedPolicy) {
     return decodedPolicy;
 }
 
+/**
+ * Populate the data of a policy object from a Base 64 encoded json representation.
+ * @param encodedPolicy
+ *          The text representation of the json policy.
+ * @param policy
+ *          The policy object to populate.
+ */
 int get_policy_from_encoded_parameter(char* encodedPolicy, struct Policy *policy) {
     printf("Encoded Policy: '%s'\n", encodedPolicy);
     policy->decoded_policy = decode_policy(encodedPolicy);
@@ -81,10 +100,14 @@ int get_policy_from_encoded_parameter(char* encodedPolicy, struct Policy *policy
     return get_policy_from_json(policy);
 }
 
+/**
+ * Remove all of the allocated memory for a policy.
+ * @param policy
+ *          The policy to remove the memory from.
+ */
 void free_policy(struct Policy *policy) {
     if (policy->ip_address != NULL) {
         free(policy->ip_address);
     }
-    // free(policy->resource);
     free(policy->decoded_policy);
 }
