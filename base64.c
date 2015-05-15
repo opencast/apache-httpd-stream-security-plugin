@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include "httpd.h"
 
 /**
  * Determine the length of the decoded message.
@@ -23,6 +24,8 @@ size_t calc_decode_length(const char* b64input) { //Calculates the length of a d
 
 /**
  * Decodes a string into plain text.
+ * @param p
+ *          The pool to allocate memory to that will be cleaned upon end of session.
  * @param b64message
  *          The Base 64 encoded message
  * @param buffer
@@ -30,10 +33,10 @@ size_t calc_decode_length(const char* b64input) { //Calculates the length of a d
  * @param length
  *          The length of the plain text result.
  */
-int base_64_decode(char* b64message, uint8_t** buffer, size_t* length) { //Decodes a base64 encoded string
+int base_64_decode(apr_pool_t *p, char* b64message, uint8_t** buffer, size_t* length) { //Decodes a base64 encoded string
 	BIO *bio, *b64;
 	int decodeLen = calc_decode_length(b64message);
-	*buffer = (uint8_t*)malloc(decodeLen);
+	*buffer = (uint8_t*)apr_palloc(p, decodeLen);
 
 	bio = BIO_new_mem_buf(b64message, -1);
 	b64 = BIO_new(BIO_f_base64());

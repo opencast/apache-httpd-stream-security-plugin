@@ -13,5 +13,5 @@ struct KeyCollection
 };
 
 void get_key_collection(char *text, struct KeyCollection *secret_key_collection);
-char *get_stream_security_keys();
+char *get_stream_security_keys(const char *configPath);
 #endif

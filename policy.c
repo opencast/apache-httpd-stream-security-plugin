@@ -1,7 +1,7 @@
 #include <jansson.h>
+#include "httpd.h"
 
 #include "base64.h"
-#include "http.h"
 #include "json_util.h"
 #include "policy.h"
 
@@ -13,7 +13,7 @@
  *          The policy that has the decoded_policy and will be populated.
  * @return The HTTP response code.
  */
-int get_policy_from_json(struct Policy *policy) {
+int get_policy_from_json(apr_pool_t *p, struct Policy *policy) {
     json_t *root;
     json_error_t error;
     json_t *statement;
@@ -24,7 +24,7 @@ int get_policy_from_json(struct Policy *policy) {
     policy->date_less_than = -1;
 
     if(!policy_text) {
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
     root = json_loads(policy_text, 0, &error);
@@ -32,28 +32,28 @@ int get_policy_from_json(struct Policy *policy) {
     if(!root)
     {
         fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
     statement = json_object_get(root, STATEMENT_JSON_KEY);
     if(!json_is_object(statement))
     {
         fprintf(stderr, "error: %s is not an object\n", STATEMENT_JSON_KEY);
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
     condition = json_object_get(statement, CONDITION_JSON_KEY);
     if(!json_is_object(condition)) {
         fprintf(stderr, "error: %s is not an object\n", CONDITION_JSON_KEY);
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
-    policy->ip_address = get_json_string(condition, IP_ADDRESS_JSON_KEY);
+    policy->ip_address = get_json_string(p, condition, IP_ADDRESS_JSON_KEY);
 
-    policy->resource = get_json_string(statement, RESOURCE_JSON_KEY);
+    policy->resource = get_json_string(p, statement, RESOURCE_JSON_KEY);
     if (policy->resource == NULL) {
         fprintf(stderr, "Unable to find json value of '%s'. Unable to authenticate response.\n", RESOURCE_JSON_KEY);
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
     policy->date_less_than = get_json_long_long(condition, DATE_LESS_THAN_JSON_KEY);
@@ -62,11 +62,11 @@ int get_policy_from_json(struct Policy *policy) {
         if (root) {
             printf("test");
         }
-        return BAD_REQUEST;
+        return HTTP_BAD_REQUEST;
     }
 
     policy->date_greater_than = get_json_long_long(condition, DATE_GREATER_THAN_JSON_KEY);
-    return WORKING;
+    return -1;
 }
 
 /**
@@ -75,12 +75,12 @@ int get_policy_from_json(struct Policy *policy) {
  *          The text of the base 64 encoded policy.
  * @return The plain text policy.
  */
-char* decode_policy(char* encodedPolicy) {
+char* decode_policy(apr_pool_t *p, char* encodedPolicy) {
     char* base64DecodeOutput;
     size_t length;
-    base_64_decode(encodedPolicy, (uint8_t**)&base64DecodeOutput, &length);
+    base_64_decode(p, encodedPolicy, (uint8_t**)&base64DecodeOutput, &length);
 
-    char *decodedPolicy = (char *) malloc(sizeof(char) * (length + 1));
+    char *decodedPolicy = (char *) apr_palloc(p, sizeof(char) * (length + 1));
     strncpy(decodedPolicy, base64DecodeOutput, length);
     decodedPolicy[length] = '\0';
     return decodedPolicy;
@@ -93,21 +93,9 @@ char* decode_policy(char* encodedPolicy) {
  * @param policy
  *          The policy object to populate.
  */
-int get_policy_from_encoded_parameter(char* encodedPolicy, struct Policy *policy) {
+int get_policy_from_encoded_parameter(apr_pool_t *p, char* encodedPolicy, struct Policy *policy) {
     printf("Encoded Policy: '%s'\n", encodedPolicy);
-    policy->decoded_policy = decode_policy(encodedPolicy);
+    policy->decoded_policy = decode_policy(p, encodedPolicy);
     printf("Decoded Policy: '%s'\n", policy->decoded_policy);
-    return get_policy_from_json(policy);
-}
-
-/**
- * Remove all of the allocated memory for a policy.
- * @param policy
- *          The policy to remove the memory from.
- */
-void free_policy(struct Policy *policy) {
-    if (policy->ip_address != NULL) {
-        free(policy->ip_address);
-    }
-    free(policy->decoded_policy);
+    return get_policy_from_json(p, policy);
 }

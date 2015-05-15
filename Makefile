@@ -6,6 +6,7 @@ OBJECTS=.libs/base64.o .libs/hmac.o .libs/keys.o .libs/json_util.o .libs/policy.
 EXTERNAL_LIBS=-ljansson -lcrypto
 TEST_EXECUTABLE=unit_tests
 DEBUG_OBJECTS=*.expand *.sibling *.initvals *.unshare *.vregs *.into_cfglayout *.split1 *.jump *.reginfo *.outof_cfglayout *.dfinit *.mode_sw *.asmcons *.subregs_of_mode_init *.ira *.subregs_of_mode_finish *.split2 *.pro_and_epilogue *.stack *.alignments *.mach *.barriers *.eh_ranges *.shorten *.final *.dfinish
+HTTPD_HEADERS=-I/usr/include/httpd -I/usr/include/apr-1
 
 all: module
 
@@ -13,25 +14,25 @@ module: library
 	apxs -i -a -c stream_security.c -L. -lstreamsecurity -ljansson -lcrypto
 
 test: 
-	gcc -Wall -g -O0 -o $(TEST_EXECUTABLE) json_util.c keys.c hmac.c resource_request.c unit_tests.c base64.c policy.c -ljansson -lcrypto
+	gcc -Wall -g -O0 -o $(TEST_EXECUTABLE) $(HTTPD_HEADERS) json_util.c keys.c hmac.c resource_request.c unit_tests.c base64.c policy.c -ljansson -lcrypto
 
 base64.o:
-	libtool --mode=compile gcc -g -O -Wall -c base64.c
+	libtool --mode=compile gcc -g -O -Wall $(HTTPD_HEADERS) -c base64.c
 
 hmac.o:
-	libtool --mode=compile gcc -g -O -Wall -c hmac.c
+	libtool --mode=compile gcc -g -O0 -Wall $(HTTPD_HEADERS) -c hmac.c
 
 keys.o:
-	libtool --mode=compile gcc -g -O -Wall -c keys.c
+	libtool --mode=compile gcc -g -O -Wall $(HTTPD_HEADERS) -c keys.c
 
 json_util.o:
-	libtool --mode=compile gcc -g -O -Wall -c json_util.c
+	libtool --mode=compile gcc -g -O -Wall $(HTTPD_HEADERS) -c json_util.c
 
 policy.o:
-	libtool --mode=compile gcc -g -O -Wall -c policy.c
+	libtool --mode=compile gcc -g -O -Wall $(HTTPD_HEADERS) -c policy.c
 
 resource_request.o:
-	libtool --mode=compile gcc -g -O -Wall -c resource_request.c
+	libtool --mode=compile gcc -g -O -Wall $(HTTPD_HEADERS) -c resource_request.c
 
 library: base64.o hmac.o keys.o json_util.o policy.o resource_request.o
 	ar -cvq libstreamsecurity.a $(OBJECTS)

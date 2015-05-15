@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <jansson.h>
+#include <errno.h>
 #include "keys.h"
-
-#define CONFIG_FILE  "/etc/httpd/conf/stream-security-keys.properties"
 
 /*
  * Return the offset of the first newline in text or the length of
@@ -59,7 +58,7 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
     }
 
     if (json_array_size(keys) < 1) {
-        printf("There were no keys defined so nothing to secure. Make sure you define the necessary keys in %s\n", CONFIG_FILE);
+        fprintf(stderr, "There were no keys defined so nothing to secure. Make sure you define the necessary keys in your config file.\n");
         secret_key_collection = NULL;
         return;
     }
@@ -98,10 +97,6 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
         }
 
         secret_text = json_string_value(secret);
-        printf("%.8s %.*s\n",
-               json_string_value(keyId),
-               newline_offset(secret_text),
-               secret_text);
 
         // Copy the values for the id and secret into the array.
         secret_keys[i].id = (char *)malloc(strlen(json_string_value(keyId)) * sizeof(char) + 1);
@@ -113,23 +108,20 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
     }
 
     json_decref(root);
-    printf("Key Collection Size: %d\n", secret_key_collection->count);
 }
 
 /**
  * Get the text from the security keys configuration file.
  */
-char *get_stream_security_keys()
+char *get_stream_security_keys(const char *configPath)
 {
-    printf("Config File Name is: %s\n", CONFIG_FILE);
-
     FILE *config_file;
     long lSize;
     char *buffer;
 
-    config_file = fopen(CONFIG_FILE, "r");
+    config_file = fopen(configPath, "r");
     if (config_file == NULL) {
-        printf("Unable to open file\n");
+        printf("Unable to open file stream security configuration file '%s' because '%s'\n", configPath, strerror(errno));
         return NULL;
     }
 
@@ -146,8 +138,6 @@ char *get_stream_security_keys()
     if( 1!=fread( buffer , lSize, 1 , config_file) )
     fclose(config_file),free(buffer),fputs("entire read fails",stderr),exit(1);
 
-    /* do your work here, buffer is a string contains the whole text */
-     printf("Contents: %s", buffer);
     fclose(config_file);
     return buffer;
 }

@@ -27,7 +27,5 @@ struct Policy
  *      The provided policy whose values will be populated.
  * @return 200 (OK) is returned if everything went according to plan.
  **/
-int get_policy_from_encoded_parameter(char* encodedPolicy, struct Policy *policy);
-
-void free_policy(struct Policy *policy);
+int get_policy_from_encoded_parameter(apr_pool_t *p, char* encodedPolicy, struct Policy *policy);
 #endif

@@ -6,6 +6,8 @@ static const int KEY_LENGTH = 32;
 
 /**
  * Create a signed version of a policy based upon a shared secret.
+ * @param p
+ *          The pool to request memory from that will be cleaned on session close.
  * @param key
  *          The key to use as the secret to sign the policy.
  * @param policy
@@ -13,7 +15,7 @@ static const int KEY_LENGTH = 32;
  * @param output
  *          The pointer to assign the signed policy.
  */
-char *create_signature(char* key, char* policy, char** output) {
+char *create_signature(apr_pool_t *p, char* key, char* policy, char** output) {
     unsigned char* digest;
     digest = HMAC(EVP_sha256(), key, strlen(key), (unsigned char*)policy, strlen(policy), NULL, NULL);
 
@@ -22,7 +24,8 @@ char *create_signature(char* key, char* policy, char** output) {
     for(i = 0; i < KEY_LENGTH; i++)
          sprintf(&hmacString[i*2], "%02x", (unsigned int)digest[i]);
 
-    char *hmac = (char *)malloc(strlen(hmacString) * sizeof(char) + 1);
+    int size = strlen(hmacString) * sizeof(char) + 1;
+    char *hmac = (char *)apr_palloc(p, size);
     strcpy(hmac, hmacString);
     return hmac;
 }
