@@ -30,7 +30,6 @@ static stream_security_config config;
 
 /** Handler for enabling or disabling the stream security module. */
 const char* stream_security_set_enabled(cmd_parms *cmd, void *cfg, const char *arg) {
-// const char *example_set_enabled(cmd_parms *cmd, void *cfg, const char *arg) {
     if(!strcasecmp(arg, "on")) config.enabled = 1;
     else config.enabled = 0;
     return arg;
@@ -50,7 +49,7 @@ const char* stream_security_set_key_path(cmd_parms *cmd, void *cfg, const char *
 static const command_rec        stream_security_directives[] =
 {
     AP_INIT_TAKE1("StreamSecurityEnabled", stream_security_set_enabled, NULL, RSRC_CONF, "Enable or disable stream_security_module"),
-    AP_INIT_TAKE1("StreamSecTest", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
+    AP_INIT_TAKE1("StreamSecurityConfigPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
     { NULL }
 };
 

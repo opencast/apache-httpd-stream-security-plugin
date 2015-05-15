@@ -17,24 +17,12 @@
 #include "policy.h"
 #include "resource_request.h"
 
-#define BUFFER_SIZE  (256 * 1024)  /* 256 KB */
-
-#define URL_FORMAT   "http://github.com/api/v2/json/keys/list/%s/%s/master"
-#define URL_SIZE     256
-#define POLICY_FILE  "policy.json"
-#define QUERY_STRING_FILE  "query-string.txt"
-
-/** The JSON keys for the resource request. */
-#define KEY_ID_JSON_KEY "keyId"
-#define POLICY_JSON_KEY "policy"
-#define SIGNATURE_JSON_KEY  "signature"
-
 struct KeyCollection secret_key_collection;
 
 int main(int argc, char *argv[])
 {
     char *text = get_stream_security_keys();
-    printf("Got text: \n%s", text);
+    printf("Got secret keys json: \n%s", text);
     struct KeyCollection secret_key_collection;
     get_key_collection(text, &secret_key_collection);
     printf("Secret key collection has %d keys.\n", secret_key_collection.count);
@@ -89,7 +77,6 @@ int main(int argc, char *argv[])
     // ----------------------------
     // Testing Expired or Too Early
     // ----------------------------
-    //
     printf("\n");
     printf("|---------------------------|\n");
     printf("| Testing Policy Expired    |\n");
@@ -110,6 +97,9 @@ int main(int argc, char *argv[])
     assert(policyExpiredResult.status == GONE);
     free_resource_request(&tooEarlyResult);
 
+    // -------------------------------
+    // Testing Failure to Authenticate
+    // -------------------------------
     printf("\n");
     printf("|--------------------------------|\n");
     printf("| Testing Non Matching Signature |\n");
