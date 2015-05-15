@@ -5,8 +5,12 @@
 
 #define CONFIG_FILE  "/etc/httpd/conf/stream-security-keys.properties"
 
-/* Return the offset of the first newline in text or the length of
-   text if there's no newline */
+/*
+ * Return the offset of the first newline in text or the length of
+ * text if there's no newline.
+ * @param text
+ *      The text to check for the new line.
+ */
 int newline_offset(const char *text)
 {
     const char *newline = strchr(text, '\n');
@@ -16,7 +20,13 @@ int newline_offset(const char *text)
         return (int)(newline - text);
 }
 
-
+/**
+ * Get a collection of keys from json text.
+ * @param text
+ *      The text to parse for the key ids and secrets.
+ * @param secret_key_collection
+ *      The KeyCollection to populate with the keys.
+ */
 void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
 {
     size_t i;
@@ -102,14 +112,13 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
         strcpy(secret_keys[i].secret, json_string_value(secret));
     }
 
-
-
     json_decref(root);
-
     printf("Key Collection Size: %d\n", secret_key_collection->count);
 }
 
-
+/**
+ * Get the text from the security keys configuration file.
+ */
 char *get_stream_security_keys()
 {
     printf("Config File Name is: %s\n", CONFIG_FILE);
@@ -120,7 +129,6 @@ char *get_stream_security_keys()
 
     config_file = fopen(CONFIG_FILE, "r");
     if (config_file == NULL) {
-        // TODO httpd error logging.
         printf("Unable to open file\n");
         return NULL;
     }
