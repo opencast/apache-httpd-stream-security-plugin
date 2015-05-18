@@ -9,6 +9,8 @@
 #include "keys.h"
 #include "resource_request.h"
 
+#define DEFAULT_KEY_PATH "/etc/httpd/conf/stream-security-keys.json"
+
 /**
  * =============================================================
  * A struct that defines the configurations for stream security.
@@ -82,7 +84,7 @@ const char* stream_security_set_extensions(cmd_parms *cmd, void *cfg, const char
 static const command_rec        stream_security_directives[] =
 {
     AP_INIT_TAKE1("streamSecurityEnabled", stream_security_set_enabled, NULL, RSRC_CONF, "Enable or disable stream_security_module"),
-    AP_INIT_TAKE1("streamSecurityConfigPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
+    AP_INIT_TAKE1("streamSecurityKeysPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
     AP_INIT_TAKE1("streamSecurityExtensions", stream_security_set_extensions, NULL, RSRC_CONF, "A comma separated list of file extensions that will have url signing applied, others will be served normally. If not specified then all files will need to be signed."),
     { NULL }
 };
@@ -111,7 +113,7 @@ module AP_MODULE_DECLARE_DATA   stream_security_module =
  * */
 static void register_hooks(apr_pool_t *pool) {
     config.enabled = 1;
-    config.keyPath = "/etc/httpd/keys.properties";
+    config.keyPath = DEFAULT_KEY_PATH;
     config.extensionCount = 0;
     /* Hook the request handler */
     ap_hook_handler(stream_security_handler, NULL, NULL, APR_HOOK_LAST);
@@ -177,7 +179,7 @@ static int stream_security_handler(request_rec *r) {
      * If it is, we accept it and do our things, it not, we simply return DECLINED,
      * and Apache will try somewhere else.
      */
-    if (!r->handler || strcmp(r->handler, "stream-security-handler")) return (DECLINED);
+    if (!r->handler || strcmp(r->handler, "stream-security")) return (DECLINED);
     if (!config.enabled) return (DECLINED);
 
     char *protocol;

@@ -21,7 +21,7 @@ struct KeyCollection secret_key_collection;
 
 int main(int argc, char *argv[])
 {
-    const char *testKeys = "stream-security-keys.properties";
+    const char *testKeys = "stream-security-keys.json";
     char *text = get_stream_security_keys(testKeys);
     printf("Got secret keys json: \n%s", text);
     struct KeyCollection secret_key_collection;
