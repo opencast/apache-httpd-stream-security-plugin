@@ -24,6 +24,7 @@ int get_policy_from_json(apr_pool_t *p, struct Policy *policy) {
     policy->date_less_than = -1;
 
     if(!policy_text) {
+        fprintf(stderr, "No policy text provided.\n");
         return HTTP_BAD_REQUEST;
     }
 

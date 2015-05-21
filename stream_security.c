@@ -18,6 +18,7 @@
  * */
 typedef struct {
     int         enabled; /* Enable or disable our module. */
+    int         debug; /* Enable or disable debug print out of the module. */
     const char  *keyPath; /* The path to the file that holds the keyids and secret keys */
     int         extensionCount;
     char        *extensions[];
@@ -38,6 +39,13 @@ static struct KeyCollection secret_key_collection;
 const char* stream_security_set_enabled(cmd_parms *cmd, void *cfg, const char *arg) {
     if(!strcasecmp(arg, "on")) config.enabled = 1;
     else config.enabled = 0;
+    return NULL;
+}
+
+/** Handler for enabling or disabling the stream security module's debugging. */
+const char* stream_security_set_debug(cmd_parms *cmd, void *cfg, const char *arg) {
+    if(!strcasecmp(arg, "on")) config.debug = 1;
+    else config.debug = 0;
     return NULL;
 }
 
@@ -84,6 +92,7 @@ const char* stream_security_set_extensions(cmd_parms *cmd, void *cfg, const char
 static const command_rec        stream_security_directives[] =
 {
     AP_INIT_TAKE1("streamSecurityEnabled", stream_security_set_enabled, NULL, RSRC_CONF, "Enable or disable stream_security_module"),
+    AP_INIT_TAKE1("streamSecurityDebug", stream_security_set_debug, NULL, RSRC_CONF, "Enable or disable debug printing of the stream security"),
     AP_INIT_TAKE1("streamSecurityKeysPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
     AP_INIT_TAKE1("streamSecurityExtensions", stream_security_set_extensions, NULL, RSRC_CONF, "A comma separated list of file extensions that will have url signing applied, others will be served normally. If not specified then all files will need to be signed."),
     { NULL }
@@ -113,6 +122,7 @@ module AP_MODULE_DECLARE_DATA   stream_security_module =
  * */
 static void register_hooks(apr_pool_t *pool) {
     config.enabled = 1;
+    config.debug = 0;
     config.keyPath = DEFAULT_KEY_PATH;
     config.extensionCount = 0;
     /* Hook the request handler */
@@ -127,29 +137,20 @@ const char *get_filename_ext(const char *filename) {
 
 void debug_print_data(request_rec *r, char* resource, struct ResourceRequest resourceRequest) {
     ap_set_content_type(r, "text/plain");
-    // Environment
-    ap_rprintf(r, "Enabled: %u\n", config.enabled);
     ap_rprintf(r, "Key Path: %s\n", config.keyPath);
-    ap_rprintf(r, "Query String %s\n", r->args);
-    ap_rprintf(r, "Unparsed URI %s\n", r->unparsed_uri);
-    ap_rprintf(r, "URI %s\n", r->uri);
     ap_rprintf(r, "Hostname: %s\n", r->hostname);
+    ap_rprintf(r, "URI %s\n", r->uri);
+    ap_rprintf(r, "Query String %s\n", r->args);
     ap_rprintf(r, "Protocol: %s\n", r->protocol);
-    ap_rprintf(r, "The Request %s\n", r->the_request);
-    ap_rprintf(r, "Content Type %s\n", r->content_type);
-    ap_rprintf(r, "Client IP '%s'\n", r->connection->remote_ip);
-    // Resource
-    ap_rprintf(r, "Resource: %s\n", resource);
-    // Resource Request
-    ap_rprintf(r, "Status: %d\n", resourceRequest.status);
     ap_rprintf(r, "Signature: %s\n", resourceRequest.signature);
     ap_rprintf(r, "Key ID: %s\n", resourceRequest.key_id);
-    ap_rprintf(r, "Policy Greater: %lld \n", resourceRequest.policy.date_greater_than);
-    ap_rprintf(r, "Policy Lesser: %lld \n", resourceRequest.policy.date_less_than);
-    ap_rprintf(r, "Policy IP: %s\n", resourceRequest.policy.ip_address);
-    ap_rprintf(r, "Policy Resource: %s\n", resourceRequest.policy.resource);
     ap_rprintf(r, "Policy Decoded Policy: %s\n", resourceRequest.policy.decoded_policy);
-    ap_rprintf(r, "Compare Resource: %s %s\n", resourceRequest.policy.resource, resource);
+    ap_rprintf(r, "Client IP '%s'\n", r->connection->remote_ip);
+    ap_rprintf(r, "Policy Client IP: %s\n", resourceRequest.policy.ip_address);
+    ap_rprintf(r, "Resource: %s\n", resource);
+    ap_rprintf(r, "Policy Resource: %s\n", resourceRequest.policy.resource);
+    ap_rprintf(r, "Return Http Status: %d\n", resourceRequest.status);
+    ap_rprintf(r, "Rejection Reason: %s\n", resourceRequest.reason);
 }
 
 bool check_extension(char *resource) {
@@ -196,6 +197,11 @@ static int stream_security_handler(request_rec *r) {
 
     struct ResourceRequest resourceRequest;
     get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
+
+    if (config.debug) {
+        debug_print_data(r, resource, resourceRequest);
+        return OK;
+    }
 
     if (resourceRequest.status != HTTP_OK) {
         return resourceRequest.status;
