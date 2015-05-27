@@ -194,7 +194,7 @@ static int stream_security_handler(request_rec *r) {
     strncpy(resource, protocol, strlen(protocol));
     strncpy(resource + strlen(protocol), r->hostname, strlen(r->hostname));
     strncpy(resource + strlen(protocol) + strlen(r->hostname), r->uri, strlen(r->uri));
-    resource[resourceLength] = "\0";
+    resource[resourceLength - 1] = '\0';
 
     struct ResourceRequest resourceRequest;
     get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
