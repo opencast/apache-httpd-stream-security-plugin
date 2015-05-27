@@ -57,33 +57,6 @@ const char* stream_security_set_key_path(cmd_parms *cmd, void *cfg, const char *
     return NULL;
 }
 
-/** Handler for specifying the location of the key ids and secret keys for stream security. */
-const char* stream_security_set_extensions(cmd_parms *cmd, void *cfg, const char *arg) {
-    config.extensionCount = 0;
-    /*if (arg == NULL || strcmp("", arg)) {
-        config.extensionCount = 0;
-    }
-
-    int extensionCount = 1;
-    int i;
-    for (i = 0; i < strlen(arg); i++) {
-        if (arg[i] == ',') {
-            extensionCount++;
-        }
-    }
-
-    char *extensions[extensionCount];
-    config.extensionCount = extensionCount;
-
-    char *extension = strtok(arg, ",");
-    while (extension != NULL) {
-        extensionCount++;
-        extension = strtok(NULL, ",");
-    }*/
-    return NULL;
-}
-
-
 /**
  * ========================================================
  * The available directives for the stream security module.
@@ -94,7 +67,6 @@ static const command_rec        stream_security_directives[] =
     AP_INIT_TAKE1("streamSecurityEnabled", stream_security_set_enabled, NULL, RSRC_CONF, "Enable or disable stream_security_module"),
     AP_INIT_TAKE1("streamSecurityDebug", stream_security_set_debug, NULL, RSRC_CONF, "Enable or disable debug printing of the stream security"),
     AP_INIT_TAKE1("streamSecurityKeysPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
-    AP_INIT_TAKE1("streamSecurityExtensions", stream_security_set_extensions, NULL, RSRC_CONF, "A comma separated list of file extensions that will have url signing applied, others will be served normally. If not specified then all files will need to be signed."),
     { NULL }
 };
 
@@ -144,10 +116,10 @@ void debug_print_data(request_rec *r, char* resource, struct ResourceRequest res
     ap_rprintf(r, "Protocol: %s\n", r->protocol);
     ap_rprintf(r, "Signature: %s\n", resourceRequest.signature);
     ap_rprintf(r, "Key ID: %s\n", resourceRequest.key_id);
-    ap_rprintf(r, "Policy Decoded Policy: %s\n", resourceRequest.policy.decoded_policy);
-    ap_rprintf(r, "Client IP '%s'\n", r->connection->remote_ip);
+    ap_rprintf(r, "Decoded Policy: %s\n", resourceRequest.policy.decoded_policy);
+    ap_rprintf(r, "Request Client IP '%s'\n", r->connection->remote_ip);
     ap_rprintf(r, "Policy Client IP: %s\n", resourceRequest.policy.ip_address);
-    ap_rprintf(r, "Resource: %s\n", resource);
+    ap_rprintf(r, "Request Resource: %s\n", resource);
     ap_rprintf(r, "Policy Resource: %s\n", resourceRequest.policy.resource);
     ap_rprintf(r, "Return Http Status: %d\n", resourceRequest.status);
     ap_rprintf(r, "Rejection Reason: %s\n", resourceRequest.reason);
