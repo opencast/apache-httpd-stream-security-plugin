@@ -60,13 +60,12 @@ Whether the plugin is enabled (by default On, can be set to Off):
 Where the location of the id / key pairs for signing the policies is located: 
 
     StreamSecurityKeysPath /etc/httpd/conf/stream-security-keys.json
+
+If there is no file in the right location it will warn you **Unable to open file stream security configuration file '/etc/httpd/conf/stream-security-keys.json' because 'No such file or directory'** when you first start up httpd.
     
 If detailed debug information should be sent with the response (by default Off, can be set to ON)::
 
     StreamSecurityDebug On
-
-
-If there is no file in the right location it will warn you **Unable to open file stream security configuration file '/etc/httpd/conf/stream-security-keys.json' because 'No such file or directory'** when you first start up httpd.
 
 The last configuration step is to configure the key id / secret pairs that need to have the same id and secret as on the matterhorn server. There is an example file in the downloaded plugin code called stream-security-keys.json. It is in json format so that when you create your own it should look like the example file.
 
