@@ -7,6 +7,8 @@ EXTERNAL_LIBS=-ljansson -lcrypto
 TEST_EXECUTABLE=unit_tests
 DEBUG_OBJECTS=*.expand *.sibling *.initvals *.unshare *.vregs *.into_cfglayout *.split1 *.jump *.reginfo *.outof_cfglayout *.dfinit *.mode_sw *.asmcons *.subregs_of_mode_init *.ira *.subregs_of_mode_finish *.split2 *.pro_and_epilogue *.stack *.alignments *.mach *.barriers *.eh_ranges *.shorten *.final *.dfinish
 HTTPD_HEADERS=-I/usr/include/httpd -I/usr/include/apr-1
+VERSION=1.0.1
+DISTRIBUTION_FILE=stream-security-httpd-$(VERSION).tar.gz
 
 all: library
 
@@ -37,5 +39,8 @@ resource_request.o:
 library: base64.o hmac.o keys.o json_util.o policy.o resource_request.o
 	ar -cvq libstreamsecurity.a $(OBJECTS)
 
+zip:
+	zip $(DISTRIBUTION_FILE) Makefile *.c *.h *.json
+
 clean:
-	rm -f *.o *.lo *.slo *.la *.a $(TEST_EXECUTABLE) $(DEBUG_OBJECTS)
+	rm -f *.o *.lo *.slo *.la *.a $(TEST_EXECUTABLE) $(DEBUG_OBJECTS) $(DISTRIBUTION_FILE)
