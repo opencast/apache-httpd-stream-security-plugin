@@ -50,6 +50,7 @@ There are two directives available for configuring stream security. These are ad
     # Configure Stream Security   
     StreamSecurityEnabled On   
     StreamSecurityKeysPath /etc/httpd/conf/stream-security-keys.json
+    StreamSecurityDebug On
     ...
 
 Whether the plugin is enabled (by default On, can be set to Off):
@@ -59,6 +60,10 @@ Whether the plugin is enabled (by default On, can be set to Off):
 Where the location of the id / key pairs for signing the policies is located: 
 
     StreamSecurityKeysPath /etc/httpd/conf/stream-security-keys.json
+    
+If detailed debug information should be sent with the response (by default Off, can be set to ON)::
+
+    StreamSecurityDebug On
 
 
 If there is no file in the right location it will warn you **Unable to open file stream security configuration file '/etc/httpd/conf/stream-security-keys.json' because 'No such file or directory'** when you first start up httpd.
