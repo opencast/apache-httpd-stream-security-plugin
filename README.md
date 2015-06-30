@@ -63,7 +63,7 @@ Where the location of the id / key pairs for signing the policies is located:
 
 If there is no file in the right location it will warn you **Unable to open file stream security configuration file '/etc/httpd/conf/stream-security-keys.json' because 'No such file or directory'** when you first start up httpd.
     
-If detailed debug information should be sent with the response (by default Off, can be set to ON)::
+If detailed debug information should be sent with the response (by default Off, can be set to On):
 
     StreamSecurityDebug On
 
