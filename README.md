@@ -50,7 +50,7 @@ There are two directives available for configuring stream security. These are ad
     # Configure Stream Security   
     StreamSecurityEnabled On   
     StreamSecurityKeysPath /etc/httpd/conf/stream-security-keys.json
-    StreamSecurityDebug On
+    StreamSecurityDebug Off
     ...
 
 Whether the plugin is enabled (by default On, can be set to Off):
