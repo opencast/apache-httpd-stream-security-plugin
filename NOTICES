@@ -1,0 +1,33 @@
+Copyright <2015>, The Apereo Foundation
+This project includes software developed by The Apereo Foundation.
+http://www.apereo.org/
+
+Licensed under the Educational Community License, Version 2.0
+(the "License"); you may not use this software except in compliance
+with the License. You may obtain a copy of the License at:
+
+  http://opensource.org/licenses/ecl2.txt
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+List of Included Third-Party Dependencies
+-----------------------------------------
+    OpenSSL Base64 Decoding
+    The Base64 decoding in this project is based upon Barry Steyn's implementation.
+    Copyright (c) 2013 Barry Steyn
+    Project: https://gist.github.com/barrysteyn/7308212
+    License: MIT License: http://opensource.org/licenses/mit-license.php
+
+List of Required Third-Party Dependencies
+-----------------------------------------
+    Jansson
+    Project: https://jansson.readthedocs.org
+    License: MIT License: http://opensource.org/licenses/mit-license.php
+
+    OpenSSL
+    Project: https://www.openssl.org/
+    License: Under OpenSSL License and Original SSLeay License: https://www.openssl.org/source/license.html
