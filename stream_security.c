@@ -22,6 +22,7 @@
 #include "http_config.h"
 #include "http_protocol.h"
 #include "ap_config.h"
+#include "apr_strings.h"
 
 #include <stdbool.h>
 
@@ -130,20 +131,20 @@ void debug_print_data(request_rec *r, char* resource, struct ResourceRequest res
     ap_set_content_type(r, "text/html");
     ap_rputs(DOCTYPE_HTML_3_2, r);
     ap_rputs("<HTML>\n", r);
-    ap_rprintf(r, "<p>Key Path: %s</p>\n", config.keyPath);
-    ap_rprintf(r, "<p>Hostname: %s</p>\n", r->hostname);
-    ap_rprintf(r, "<p>URI %s</p>\n", r->uri);
-    ap_rprintf(r, "<p>Query String %s</p>\n", r->args);
-    ap_rprintf(r, "<p>Protocol: %s</p>\n", r->protocol);
-    ap_rprintf(r, "<p>Signature: %s</p>\n", resourceRequest.signature);
-    ap_rprintf(r, "<p>Key ID: %s</p>\n", resourceRequest.key_id);
-    ap_rprintf(r, "<p>Decoded Policy: %s</p>\n", resourceRequest.policy.decoded_policy);
+    ap_rprintf(r, "<p>Key Path: '%s'</p>\n", config.keyPath);
+    ap_rprintf(r, "<p>Hostname: '%s'</p>\n", r->hostname);
+    ap_rprintf(r, "<p>URI: '%s'</p>\n", r->uri);
+    ap_rprintf(r, "<p>Scheme: '%s'</p>\n", ap_http_scheme(r));
+    ap_rprintf(r, "<p>Query String: '%s'</p>\n", r->args);
+    ap_rprintf(r, "<p>Signature: '%s'</p>\n", resourceRequest.signature);
+    ap_rprintf(r, "<p>Key ID: '%s'</p>\n", resourceRequest.key_id);
+    ap_rprintf(r, "<p>Decoded Policy: '%s'</p>\n", resourceRequest.policy.decoded_policy);
     ap_rprintf(r, "<p>Request Client IP '%s'</p>\n", r->connection->remote_ip);
-    ap_rprintf(r, "<p>Policy Client IP: %s</p>\n", resourceRequest.policy.ip_address);
-    ap_rprintf(r, "<p>Request Resource: %s</p>\n", resource);
-    ap_rprintf(r, "<p>Policy Resource: %s</p>\n", resourceRequest.policy.resource);
-    ap_rprintf(r, "<p>Return Http Status: %d</p>\n", resourceRequest.status);
-    ap_rprintf(r, "<p>Rejection Reason: %s</p>\n", resourceRequest.reason);
+    ap_rprintf(r, "<p>Policy Client IP: '%s'</p>\n", resourceRequest.policy.ip_address);
+    ap_rprintf(r, "<p>Request Resource: '%s'</p>\n", resource);
+    ap_rprintf(r, "<p>Policy Resource: '%s'</p>\n", resourceRequest.policy.resource);
+    ap_rprintf(r, "<p>Return Http Status: '%d'</p>\n", resourceRequest.status);
+    ap_rprintf(r, "<p>Rejection Reason: '%s'</p>\n", resourceRequest.reason);
     ap_rputs("</HTML>\n", r);
 }
 
@@ -176,55 +177,30 @@ static int stream_security_handler(request_rec *r) {
      */
     if (!r->handler || strcmp(r->handler, "stream-security")) return (DECLINED);
     if (!config.enabled) return (DECLINED);
-
-    char *httpProtocol = "http://";
-    int resourceLength = strlen(httpProtocol) + strlen(r->hostname) + strlen(r->uri) + 1;
-    char *httpResource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
-    strncpy(httpResource, httpProtocol, strlen(httpProtocol));
-    strncpy(httpResource + strlen(httpProtocol), r->hostname, strlen(r->hostname));
-    strncpy(httpResource + strlen(httpProtocol) + strlen(r->hostname), r->uri, strlen(r->uri));
-    httpResource[resourceLength - 1] = '\0';
-
-    struct ResourceRequest httpResourceRequest;
-    get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, httpResource, &secret_key_collection, &httpResourceRequest);
-
-    if (httpResourceRequest.status == HTTP_OK) {
-        if (config.debug) {
-            debug_print_data(r, httpResource, httpResourceRequest);
-            return OK;
-        }
-        return DECLINED;
+    char *protocol;
+    if (apr_strnatcmp(ap_http_scheme(r), "https") == 0) {
+        protocol = "https://";
+    } else {
+        protocol = "http://";
     }
+    int resourceLength = strlen(protocol) + strlen(r->hostname) + strlen(r->uri) + 1;
+    char *resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
+    strncpy(resource, protocol, strlen(protocol));
+    strncpy(resource + strlen(protocol), r->hostname, strlen(r->hostname));
+    strncpy(resource + strlen(protocol) + strlen(r->hostname), r->uri, strlen(r->uri));
+    resource[resourceLength - 1] = '\0';
 
-    char *httpsProtocol = "https://";
-    if (httpResourceRequest.status == HTTP_FORBIDDEN &&
-            strncmp(httpsProtocol, httpResourceRequest.policy.resource, strlen(httpsProtocol)) == 0) {
-        /** The resource starts with https so lets try that as the resource URL. */
-        resourceLength = strlen(httpsProtocol) + strlen(r->hostname) + strlen(r->uri) + 1;
-        char *httpsResource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
-        strncpy(httpsResource, httpsProtocol, strlen(httpsProtocol));
-        strncpy(httpsResource + strlen(httpsProtocol), r->hostname, strlen(r->hostname));
-        strncpy(httpsResource + strlen(httpsProtocol) + strlen(r->hostname), r->uri, strlen(r->uri));
-        httpsResource[resourceLength - 1] = '\0';
-
-        struct ResourceRequest httpsResourceRequest;
-        get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, httpsResource, &secret_key_collection, &httpsResourceRequest);
-
-        if (config.debug) {
-            debug_print_data(r, httpsResource, httpsResourceRequest);
-            return OK;
-        }
-
-        if (httpsResourceRequest.status != HTTP_OK) {
-            return httpsResourceRequest.status;
-        }
-
-        return DECLINED;
-    }
+    struct ResourceRequest resourceRequest;
+    get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
 
     if (config.debug) {
-        debug_print_data(r, httpResource, httpResourceRequest);
+        debug_print_data(r, resource, resourceRequest);
         return OK;
     }
-    return httpResourceRequest.status;
+
+    if (resourceRequest.status == HTTP_OK) {
+        return DECLINED;
+    }
+
+    return resourceRequest.status;
 }
