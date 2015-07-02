@@ -36,6 +36,7 @@ static const int WORKING = -1;
 static const char *IP_ADDRESS_DOESNT_MATCH = "The policy ip address doesn't match the client's ip address.";
 static const char *POLICY_SIGNATURE_WRONG = "The policy signature doesn't match the original signature.";
 static const char *RESOURCE_DOESNT_MATCH = "The policy resource doesn't match the requested resource.";
+static const char *NO_REASON = "";
 
 struct QueryParameter
 {
@@ -160,6 +161,7 @@ void get_resource_request_from_query_string(apr_pool_t *p, char* inputString, ch
     resourceRequest->policy.ip_address = NULL;
     resourceRequest->policy.resource = NULL;
     resourceRequest->policy.decoded_policy = NULL;
+    resourceRequest->reason = NO_REASON;
 
     if (inputString == NULL || strcmp("", inputString) == 0) {
         resourceRequest->status = HTTP_BAD_REQUEST;
