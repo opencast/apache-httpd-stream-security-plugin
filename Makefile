@@ -58,7 +58,7 @@ library: base64.o hmac.o keys.o json_util.o policy.o resource_request.o
 	ar -cvq libstreamsecurity.a $(OBJECTS)
 
 tar.gz:
-	tar -cvzf $(DISTRIBUTION_FILE) Makefile *.c *.h *.json
+	tar -cvzf $(DISTRIBUTION_FILE) Makefile *.c *.h *.json NOTICES LICENSE README.md
 
 clean:
 	rm -f *.o *.lo *.slo *.la *.a $(TEST_EXECUTABLE) $(DEBUG_OBJECTS) $(DISTRIBUTION_FILE)

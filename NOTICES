@@ -29,5 +29,7 @@ List of Required Third-Party Dependencies
     License: MIT License: http://opensource.org/licenses/mit-license.php
 
     OpenSSL
+    This product includes software developed by the OpenSSL Project for use in
+    the OpenSSL Toolkit (http://www.openssl.org/)
     Project: https://www.openssl.org/
     License: Under OpenSSL License and Original SSLeay License: https://www.openssl.org/source/license.html
