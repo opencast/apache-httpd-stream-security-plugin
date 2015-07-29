@@ -96,15 +96,20 @@ int get_policy_from_json(apr_pool_t *p, struct Policy *policy) {
  *          The text of the base 64 encoded policy.
  * @return The plain text policy.
  */
-char* decode_policy(apr_pool_t *p, char* encodedPolicy) {
+int decode_policy(apr_pool_t *p, char* encodedPolicy, char** decodedPolicyPtr) {
     char* base64DecodeOutput;
     size_t length;
-    base_64_decode(p, encodedPolicy, (uint8_t**)&base64DecodeOutput, &length);
-
+    int base64Result = base_64_decode(p, encodedPolicy, (uint8_t**)&base64DecodeOutput, &length);
+    if (base64Result != 0) {
+        return base64Result;
+    }
     char *decodedPolicy = (char *) apr_palloc(p, sizeof(char) * (length + 1));
     strncpy(decodedPolicy, base64DecodeOutput, length);
     decodedPolicy[length] = '\0';
-    return decodedPolicy;
+
+    *decodedPolicyPtr = decodedPolicy;
+
+    return 0;
 }
 
 /**
@@ -120,7 +125,10 @@ int get_policy_from_encoded_parameter(apr_pool_t *p, char* encodedPolicy, struct
         return HTTP_BAD_REQUEST;
     }
     printf("Encoded Policy: '%s'\n", encodedPolicy);
-    policy->decoded_policy = decode_policy(p, encodedPolicy);
+    int decodePolicyResult = decode_policy(p, encodedPolicy, &policy->decoded_policy);
+    if (decodePolicyResult != 0) {
+        return decodePolicyResult;
+    }
     printf("Decoded Policy: '%s'\n", policy->decoded_policy);
     return get_policy_from_json(p, policy);
 }

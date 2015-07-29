@@ -96,7 +96,9 @@ int base_64_decode(apr_pool_t *p, char* b64message, uint8_t** buffer, size_t* le
 
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
 	*length = BIO_read(bio, *buffer, strlen(withPadding));
-	assert(*length == decodeLen); //length should equal decodeLen, else something went horribly wrong
+    if (*length != decodeLen) {
+        return HTTP_BAD_REQUEST;
+    }
 	BIO_free_all(bio);
 	return (0); //success
 }
