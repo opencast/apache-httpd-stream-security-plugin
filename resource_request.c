@@ -212,6 +212,7 @@ void get_resource_request_from_query_string(apr_pool_t *p, char* inputString, ch
         }
         if (result != WORKING) {
             fprintf(stderr, "Unable to process query string parameter '%s' with value '%s' had http result of %d\n", qp.key, qp.value, result);
+            resourceRequest->status = result;
             return;
         }
     }

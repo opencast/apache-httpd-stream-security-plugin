@@ -43,7 +43,7 @@ int get_policy_from_json(apr_pool_t *p, struct Policy *policy) {
 
     policy->date_less_than = -1;
 
-    if(!policy_text) {
+    if(!policy_text || strcmp(policy_text, "") == 0) {
         fprintf(stderr, "No policy text provided.\n");
         return HTTP_BAD_REQUEST;
     }
@@ -115,6 +115,10 @@ char* decode_policy(apr_pool_t *p, char* encodedPolicy) {
  *          The policy object to populate.
  */
 int get_policy_from_encoded_parameter(apr_pool_t *p, char* encodedPolicy, struct Policy *policy) {
+    if(!encodedPolicy || strcmp(encodedPolicy, "") == 0) {
+        fprintf(stderr, "No policy text provided.\n");
+        return HTTP_BAD_REQUEST;
+    }
     printf("Encoded Policy: '%s'\n", encodedPolicy);
     policy->decoded_policy = decode_policy(p, encodedPolicy);
     printf("Decoded Policy: '%s'\n", policy->decoded_policy);
