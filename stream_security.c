@@ -40,8 +40,6 @@ typedef struct {
     int         enabled; /* Enable or disable our module. */
     int         debug; /* Enable or disable debug print out of the module. */
     const char  *keyPath; /* The path to the file that holds the keyids and secret keys */
-    int         extensionCount;
-    char        *extensions[];
 } stream_security_config;
 
 /** The configuration for the module. */
@@ -116,15 +114,8 @@ static void register_hooks(apr_pool_t *pool) {
     config.enabled = 1;
     config.debug = 0;
     config.keyPath = DEFAULT_KEY_PATH;
-    config.extensionCount = 0;
     /* Hook the request handler */
     ap_hook_handler(stream_security_handler, NULL, NULL, APR_HOOK_LAST);
-}
-
-const char *get_filename_ext(const char *filename) {
-    const char *dot = strrchr(filename, '.');
-    if(!dot || dot == filename) return "";
-    return dot + 1;
 }
 
 void debug_print_data(request_rec *r, char* resource, struct ResourceRequest resourceRequest) {
@@ -146,23 +137,6 @@ void debug_print_data(request_rec *r, char* resource, struct ResourceRequest res
     ap_rprintf(r, "<p>Return Http Status: '%d'</p>\n", resourceRequest.status);
     ap_rprintf(r, "<p>Rejection Reason: '%s'</p>\n", resourceRequest.reason);
     ap_rputs("</HTML>\n", r);
-}
-
-bool check_extension(char *resource) {
-    if (config.extensions == NULL || config.extensionCount == 0) {
-        return true;
-    }
-
-    char* extension = (char *)get_filename_ext((const char *)resource);
-    int i;
-    bool handles = false;
-    for (i = 0; i < config.extensionCount; i++) {
-        if (strcmp(config.extensions[i], extension) == 0) {
-            handles = true;
-        }
-    }
-
-    return handles;
 }
 
 /* *
