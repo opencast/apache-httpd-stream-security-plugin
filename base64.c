@@ -30,15 +30,43 @@
  * Determine the length of the decoded message.
  */
 size_t calc_decode_length(const char* b64input) { //Calculates the length of a decoded string
-	size_t len = strlen(b64input),
-	padding = 0;
+    size_t len = strlen(b64input);
+    size_t padding = 0;
 
-	if (b64input[len-1] == '=' && b64input[len-2] == '=') //last two chars are =
-	padding = 2;
-	else if (b64input[len-1] == '=') //last char is =
-	padding = 1;
+    if (b64input[len-1] == '=' && b64input[len-2] == '=') //last two chars are =
+        padding = 2;
+    else if (b64input[len-1] == '=') //last char is =
+        padding = 1;
 
-	return (len*3)/4 - padding;
+    return (len*3)/4 - padding;
+}
+
+/**
+ * Change url encoded '%3D' to be the base 64 padding '=' sign.
+ */
+char *urlDecode(apr_pool_t *p, char *b64message) {
+    int messageLength = strlen(b64message);
+    char* paddingBuffer = (char*) apr_palloc(p, sizeof(char) * 7);
+    // Check to see if there are two padding characters that have been encoded.
+    if (messageLength > 6) {
+        strncpy(paddingBuffer, b64message + (messageLength - 6), 6);
+        paddingBuffer[6] = '\0';
+        if (strcmp("%3D%3D", paddingBuffer) == 0) {
+            b64message[messageLength - 6] = '=';
+            b64message[messageLength - 5] = '=';
+            b64message[messageLength - 4] = '\0';
+        }
+    }
+    if (messageLength > 3) {
+        strncpy(paddingBuffer, b64message + (messageLength - 3), 3);
+        paddingBuffer[3] = '\0';
+        if (strcmp("%3D", paddingBuffer) == 0) {
+            b64message[messageLength - 3] = '=';
+            b64message[messageLength - 2] = '\0';
+        }
+    }
+
+    return b64message;
 }
 
 /**
@@ -84,22 +112,24 @@ char *addPadding(apr_pool_t *p, char *b64message) {
  *          The length of the plain text result.
  */
 int base_64_decode(apr_pool_t *p, char* b64message, uint8_t** buffer, size_t* length) {
-	BIO *bio, *b64;
-	int decodeLen = calc_decode_length(b64message);
-	*buffer = (uint8_t*)apr_palloc(p, decodeLen);
+    char* message = b64message;
+    if (strstr(b64message, "%3D") != NULL) {
+        message = urlDecode(p, b64message);
+    }
+    BIO *bio, *b64;
+    int decodeLen = calc_decode_length(message);
+    *buffer = (uint8_t*)apr_palloc(p, decodeLen);
+    char *withPadding = addPadding(p, message);
+    bio = BIO_new_mem_buf(withPadding, -1);
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_push(b64, bio);
 
-    char *withPadding = addPadding(p, b64message);
-
-	bio = BIO_new_mem_buf(withPadding, -1);
-	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_push(b64, bio);
-
-	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
-	*length = BIO_read(bio, *buffer, strlen(withPadding));
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
+    *length = BIO_read(bio, *buffer, strlen(withPadding));
     if (*length != decodeLen) {
         return HTTP_BAD_REQUEST;
     }
-	BIO_free_all(bio);
-	return (0); //success
+    BIO_free_all(bio);
+    return (0); //success
 }
 
