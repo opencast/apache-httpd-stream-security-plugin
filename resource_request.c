@@ -26,6 +26,7 @@
 #include <time.h>
 
 #include "httpd.h"
+#include "apr_uri.h"
 
 #include "keys.h"
 #include "hmac.h"
@@ -96,7 +97,7 @@ struct QueryParameter get_query_string_parameter(apr_pool_t *p, char* inputStrin
  * @param resourceRequest
  *          The resource request to verify including the signature, keyid and policy.
  */
-void verify_resource_request(apr_pool_t *p, char* clientIp, char* resourceUri, struct KeyCollection *keyCollection, struct ResourceRequest *resourceRequest) {
+void verify_resource_request(apr_pool_t *p, int strict, char* clientIp, char* resourceUri, struct KeyCollection *keyCollection, struct ResourceRequest *resourceRequest) {
     time_t rawtime;
     time(&rawtime);
     long long unixEpoch = ((long long) rawtime) * 1000;
@@ -127,11 +128,20 @@ void verify_resource_request(apr_pool_t *p, char* clientIp, char* resourceUri, s
         return;
     }
 
-    if (strcmp(resourceUri, resourceRequest->policy.resource) != 0) {
+    if (strict && strcmp(resourceUri, resourceRequest->policy.resource) != 0) {
         printf("The resource requested and policy doesn't match! %s %s %d\n", resourceUri, resourceRequest->policy.resource, strcmp(resourceUri, resourceRequest->policy.resource));
         resourceRequest->status = HTTP_FORBIDDEN;
         resourceRequest->reason = RESOURCE_DOESNT_MATCH;
         return;
+    } else if (!strict) {
+        apr_uri_t parsedURI;
+        apr_uri_parse(p, resourceRequest->policy.resource, &parsedURI);
+        if (strcmp(resourceUri, parsedURI.path) != 0) {
+           printf("The resource requested and policy doesn't match! %s %s %d\n", resourceUri, parsedURI.path, strcmp(parsedURI.path, resourceRequest->policy.resource));
+            resourceRequest->status = HTTP_FORBIDDEN;
+            resourceRequest->reason = "The path to the resource doesn't match";
+            return;
+        }
     }
 
     struct Policy *policy = &resourceRequest->policy;
@@ -155,7 +165,7 @@ void verify_resource_request(apr_pool_t *p, char* clientIp, char* resourceUri, s
     resourceRequest->status = HTTP_OK;
 }
 
-void get_resource_request_from_query_string(apr_pool_t *p, char* inputString, char* clientIp, char* resourceUri, struct KeyCollection *keyCollection, struct ResourceRequest *resourceRequest) {
+void get_resource_request_from_query_string(apr_pool_t *p, int strict, char* inputString, char* clientIp, char* resourceUri, struct KeyCollection *keyCollection, struct ResourceRequest *resourceRequest) {
     resourceRequest->key_id = NULL;
     resourceRequest->signature = NULL;
     resourceRequest->policy.ip_address = NULL;
@@ -223,6 +233,6 @@ void get_resource_request_from_query_string(apr_pool_t *p, char* inputString, ch
         return;
     }
 
-    verify_resource_request(p, clientIp, resourceUri, keyCollection, resourceRequest);
+    verify_resource_request(p, strict, clientIp, resourceUri, keyCollection, resourceRequest);
     printf("The status of the request is: %d\n", resourceRequest->status);
 }

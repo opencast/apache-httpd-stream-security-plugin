@@ -29,6 +29,7 @@
 #include "keys.h"
 #include "resource_request.h"
 
+
 #define DEFAULT_KEY_PATH "/etc/httpd/conf/stream-security-keys.json"
 
 /**
@@ -40,6 +41,7 @@ typedef struct {
     int         enabled; /* Enable or disable our module. */
     int         debug; /* Enable or disable debug print out of the module. */
     const char  *keyPath; /* The path to the file that holds the keyids and secret keys */
+    int         strict; /* Enable strict checking of resources or just the path to the resource */
 } stream_security_config;
 
 /** The configuration for the module. */
@@ -75,6 +77,13 @@ const char* stream_security_set_key_path(cmd_parms *cmd, void *cfg, const char *
     return NULL;
 }
 
+/** Handler for using strict comparison of the resource (use everything or just the path) */
+const char* stream_security_set_strict(cmd_parms *cmd, void *cfg, const char *arg) {
+    if(!strcasecmp(arg, "on")) config.strict = 1;
+    else config.strict = 0;
+    return NULL;
+}
+
 /**
  * ========================================================
  * The available directives for the stream security module.
@@ -85,6 +94,7 @@ static const command_rec        stream_security_directives[] =
     AP_INIT_TAKE1("streamSecurityEnabled", stream_security_set_enabled, NULL, RSRC_CONF, "Enable or disable stream_security_module"),
     AP_INIT_TAKE1("streamSecurityDebug", stream_security_set_debug, NULL, RSRC_CONF, "Enable or disable debug printing of the stream security"),
     AP_INIT_TAKE1("streamSecurityKeysPath", stream_security_set_key_path, NULL, RSRC_CONF, "The path to the file with the key ids and secret keys"),
+    AP_INIT_TAKE1("streamSecurityStrict", stream_security_set_strict, NULL, RSRC_CONF, "Enable or disable strict checking of resources"),
     { NULL }
 };
 
@@ -114,6 +124,7 @@ static void register_hooks(apr_pool_t *pool) {
     config.enabled = 1;
     config.debug = 0;
     config.keyPath = DEFAULT_KEY_PATH;
+    config.strict = 1;
     /* Hook the request handler */
     ap_hook_handler(stream_security_handler, NULL, NULL, APR_HOOK_LAST);
 }
@@ -124,6 +135,7 @@ void debug_print_data(request_rec *r, char* resource, struct ResourceRequest res
     ap_rputs("<HTML>\n", r);
     ap_rprintf(r, "<p>Key Path: '%s'</p>\n", config.keyPath);
     ap_rprintf(r, "<p>Hostname: '%s'</p>\n", r->hostname);
+    ap_rprintf(r, "<p>Strict (if 0 then just check path): '%d'</p>\n", config.strict);
     ap_rprintf(r, "<p>URI: '%s'</p>\n", r->uri);
     ap_rprintf(r, "<p>Scheme: '%s'</p>\n", ap_http_scheme(r));
     ap_rprintf(r, "<p>Query String: '%s'</p>\n", r->args);
@@ -157,15 +169,25 @@ static int stream_security_handler(request_rec *r) {
     } else {
         protocol = "http://";
     }
-    int resourceLength = strlen(protocol) + strlen(r->hostname) + strlen(r->uri) + 1;
-    char *resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
-    strncpy(resource, protocol, strlen(protocol));
-    strncpy(resource + strlen(protocol), r->hostname, strlen(r->hostname));
-    strncpy(resource + strlen(protocol) + strlen(r->hostname), r->uri, strlen(r->uri));
-    resource[resourceLength - 1] = '\0';
+
+    int resourceLength;
+    char *resource;
+    if (config.strict) {
+        resourceLength = strlen(protocol) + strlen(r->hostname) + strlen(r->uri) + 1;
+        resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
+        strncpy(resource, protocol, strlen(protocol));
+        strncpy(resource + strlen(protocol), r->hostname, strlen(r->hostname));
+        strncpy(resource + strlen(protocol) + strlen(r->hostname), r->uri, strlen(r->uri));
+        resource[resourceLength - 1] = '\0';
+    } else {
+        resourceLength = strlen(r->uri) + 1;
+        resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
+        strncpy(resource, r->uri, strlen(r->uri));
+        resource[resourceLength - 1] = '\0';
+    }
 
     struct ResourceRequest resourceRequest;
-    get_resource_request_from_query_string(r->pool, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
+    get_resource_request_from_query_string(r->pool, config.strict, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
 
     if (config.debug) {
         debug_print_data(r, resource, resourceRequest);
