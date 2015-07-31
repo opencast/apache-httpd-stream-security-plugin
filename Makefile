@@ -25,7 +25,7 @@ EXTERNAL_LIBS=-ljansson -lcrypto
 TEST_EXECUTABLE=unit_tests
 DEBUG_OBJECTS=*.expand *.sibling *.initvals *.unshare *.vregs *.into_cfglayout *.split1 *.jump *.reginfo *.outof_cfglayout *.dfinit *.mode_sw *.asmcons *.subregs_of_mode_init *.ira *.subregs_of_mode_finish *.split2 *.pro_and_epilogue *.stack *.alignments *.mach *.barriers *.eh_ranges *.shorten *.final *.dfinish
 HTTPD_HEADERS=-I/usr/include/httpd -I/usr/include/apr-1
-VERSION=1.0.2
+VERSION=1.0.3
 DISTRIBUTION_FILE=stream-security-httpd-$(VERSION).tar.gz
 
 all: library
