@@ -35,6 +35,7 @@
 
 static const int WORKING = -1;
 static const char *IP_ADDRESS_DOESNT_MATCH = "The policy ip address doesn't match the client's ip address.";
+static const char *KEY_NOT_FOUND = "The requested key could not be found.";
 static const char *POLICY_SIGNATURE_WRONG = "The policy signature doesn't match the original signature.";
 static const char *RESOURCE_DOESNT_MATCH = "The policy resource doesn't match the requested resource.";
 static const char *NO_REASON = "";
@@ -104,17 +105,17 @@ void verify_resource_request(apr_pool_t *p, int strict, char* clientIp, char* re
 
     int keyCount;
     char *key = NULL;
-    struct SecretKey *currentKey = keyCollection->secret_keys;
     bool foundKey = false;
     for(keyCount = 0; keyCount < keyCollection->count; keyCount++) {
-        if (strcmp(resourceRequest->key_id, currentKey->id) == 0) {
+        if (strcmp(resourceRequest->key_id, keyCollection->secret_keys[keyCount].id) == 0) {
             foundKey = true;
-            key = currentKey->secret;
+            key = keyCollection->secret_keys[keyCount].secret;
         }
     }
 
     if (!foundKey) {
         resourceRequest->status = HTTP_BAD_REQUEST;
+        resourceRequest->reason = KEY_NOT_FOUND;
         return;
     }
 
