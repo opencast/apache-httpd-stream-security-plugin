@@ -103,7 +103,7 @@ int decode_policy(apr_pool_t *p, char* encodedPolicy, char** decodedPolicyPtr) {
     if (base64Result != 0) {
         return base64Result;
     }
-    char *decodedPolicy = (char *) apr_palloc(p, sizeof(char) * (length + 1));
+    char *decodedPolicy = (char *) apr_pcalloc(p, sizeof(char) * (length + 1));
     strncpy(decodedPolicy, base64DecodeOutput, length);
     decodedPolicy[length] = '\0';
 

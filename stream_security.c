@@ -174,14 +174,14 @@ static int stream_security_handler(request_rec *r) {
     char *resource;
     if (config.strict) {
         resourceLength = strlen(protocol) + strlen(r->hostname) + strlen(r->uri) + 1;
-        resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
+        resource = (char *) apr_pcalloc(r->pool, sizeof(char) * (resourceLength));
         strncpy(resource, protocol, strlen(protocol));
         strncpy(resource + strlen(protocol), r->hostname, strlen(r->hostname));
         strncpy(resource + strlen(protocol) + strlen(r->hostname), r->uri, strlen(r->uri));
         resource[resourceLength - 1] = '\0';
     } else {
         resourceLength = strlen(r->uri) + 1;
-        resource = (char *) apr_palloc(r->pool, sizeof(char) * (resourceLength));
+        resource = (char *) apr_pcalloc(r->pool, sizeof(char) * (resourceLength));
         strncpy(resource, r->uri, strlen(r->uri));
         resource[resourceLength - 1] = '\0';
     }

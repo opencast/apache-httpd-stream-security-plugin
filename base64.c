@@ -44,9 +44,11 @@ size_t calc_decode_length(const char* b64input) { //Calculates the length of a d
 /**
  * Change url encoded '%3D' to be the base 64 padding '=' sign.
  */
-char *urlDecode(apr_pool_t *p, char *b64message) {
+char *urlDecode(apr_pool_t* p, char *b64message) {
     int messageLength = strlen(b64message);
-    char* paddingBuffer = (char*) apr_palloc(p, sizeof(char) * 7);
+    apr_pool_t *mp;
+    apr_pool_create(&mp, p);
+    char* paddingBuffer = (char*) apr_pcalloc(mp, sizeof(char) * 7);
     // Check to see if there are two padding characters that have been encoded.
     if (messageLength > 6) {
         strncpy(paddingBuffer, b64message + (messageLength - 6), 6);
@@ -65,7 +67,7 @@ char *urlDecode(apr_pool_t *p, char *b64message) {
             b64message[messageLength - 2] = '\0';
         }
     }
-
+    apr_pool_destroy(mp);
     return b64message;
 }
 
@@ -85,13 +87,13 @@ char *addPadding(apr_pool_t *p, char *b64message) {
     }
 
     if (3 - (decodeLen % 3) == 1 && b64message[encodedLen - 1] == '=') {
-        char *withOnePadding = (char*) apr_palloc(p, sizeof(char) * (encodedLen + 2));
+        char *withOnePadding = (char*) apr_pcalloc(p, sizeof(char) * (encodedLen + 2));
         strncpy(withOnePadding, b64message, encodedLen);
         withOnePadding[encodedLen] = '=';
         withOnePadding[encodedLen + 1] = '\0';
         return withOnePadding;
     } else {
-        char *withTwoPadding = (char*) apr_palloc(p, sizeof(char) * (encodedLen + 3));
+        char *withTwoPadding = (char*) apr_pcalloc(p, sizeof(char) * (encodedLen + 3));
         strncpy(withTwoPadding, b64message, encodedLen);
         withTwoPadding[encodedLen] = '=';
         withTwoPadding[encodedLen + 1] = '=';
@@ -118,7 +120,7 @@ int base_64_decode(apr_pool_t *p, char* b64message, uint8_t** buffer, size_t* le
     }
     BIO *bio, *b64;
     int decodeLen = calc_decode_length(message);
-    *buffer = (uint8_t*)apr_palloc(p, decodeLen);
+    *buffer = (uint8_t*)apr_pcalloc(p, decodeLen);
     char *withPadding = addPadding(p, message);
     bio = BIO_new_mem_buf(withPadding, -1);
     b64 = BIO_new(BIO_f_base64());

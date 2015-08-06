@@ -69,15 +69,17 @@ int find_key_length(char* inputString) {
  *      The query string parameter.
  */
 struct QueryParameter get_query_string_parameter(apr_pool_t *p, char* inputString) {
+    apr_pool_t *mp;
+    apr_pool_create(&mp, p);
     // Get the key.
     int keyLength = find_key_length(inputString);
-    char *newKey = (char*) apr_palloc(p, (keyLength + 1)*sizeof(char));
+    char *newKey = (char*) apr_pcalloc(mp, (keyLength + 1) * sizeof(char));
     strncpy(newKey, inputString, keyLength);
     newKey[keyLength] = '\0';
 
     // Get the value.
     int valueLength = strlen(inputString) - keyLength;
-    char *newValue = (char*) apr_palloc(p, valueLength*sizeof(char) + 1);
+    char *newValue = (char*) apr_pcalloc(mp, (valueLength + 1) * sizeof(char));
     strncpy(newValue, inputString + keyLength + 1, valueLength);
     newValue[valueLength] = '\0';
 
@@ -119,7 +121,7 @@ void verify_resource_request(apr_pool_t *p, int strict, char* clientIp, char* re
         return;
     }
 
-    char *policy_signature = create_signature(p, key, resourceRequest->policy.decoded_policy, &policy_signature);
+    char *policy_signature = create_signature(p, key, resourceRequest->policy.decoded_policy);
 
     printf("Policy Signature is: '%s' Signature is '%s'\n", policy_signature, resourceRequest->signature);
     if (strcmp(policy_signature, resourceRequest->signature) != 0) {
@@ -135,14 +137,17 @@ void verify_resource_request(apr_pool_t *p, int strict, char* clientIp, char* re
         resourceRequest->reason = RESOURCE_DOESNT_MATCH;
         return;
     } else if (!strict) {
+        apr_pool_t *mp;
+        apr_pool_create(&mp, p);
         apr_uri_t parsedURI;
-        apr_uri_parse(p, resourceRequest->policy.resource, &parsedURI);
+        apr_uri_parse(mp, resourceRequest->policy.resource, &parsedURI);
         if (strcmp(resourceUri, parsedURI.path) != 0) {
-           printf("The resource requested and policy doesn't match! %s %s %d\n", resourceUri, parsedURI.path, strcmp(parsedURI.path, resourceRequest->policy.resource));
+            printf("The resource requested and policy path doesn't match! %s %s %s %d\n", resourceUri, parsedURI.path, resourceRequest->policy.resource, strcmp(parsedURI.path, resourceRequest->policy.resource));
             resourceRequest->status = HTTP_FORBIDDEN;
             resourceRequest->reason = "The path to the resource doesn't match";
             return;
         }
+        apr_pool_destroy(mp);
     }
 
     struct Policy *policy = &resourceRequest->policy;

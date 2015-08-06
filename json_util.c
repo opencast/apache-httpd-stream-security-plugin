@@ -38,7 +38,7 @@ char *get_json_string(apr_pool_t *p, json_t *parent, char *json_key) {
     if(!json_is_string(obj)) {
         return NULL;
     } else {
-        char *return_string = (char *)apr_palloc(p, strlen(json_string_value(obj)) * sizeof(char) + 1);
+        char *return_string = (char *)apr_pcalloc(p, strlen(json_string_value(obj)) * sizeof(char) + 1);
         strcpy(return_string, json_string_value(obj));
         return return_string;
     }

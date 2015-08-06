@@ -119,11 +119,11 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
         secret_text = json_string_value(secret);
 
         // Copy the values for the id and secret into the array.
-        secret_keys[i].id = (char *)malloc(strlen(json_string_value(keyId)) * sizeof(char) + 1);
+        secret_keys[i].id = (char *)calloc(strlen(json_string_value(keyId)) + 1, sizeof(char));
         strcpy(secret_keys[i].id, json_string_value(keyId));
 
         // secret_keys[i].secret = (char *)malloc(sizeof(json_string_value(secret)));
-        secret_keys[i].secret = (char *)malloc(strlen(json_string_value(secret)) * sizeof(char) + 1);
+        secret_keys[i].secret = (char *)calloc(strlen(json_string_value(secret)) + 1, sizeof(char));
         strcpy(secret_keys[i].secret, json_string_value(secret));
     }
 
