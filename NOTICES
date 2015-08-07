@@ -22,6 +22,16 @@ List of Included Third-Party Dependencies
     Project: https://gist.github.com/barrysteyn/7308212
     License: MIT License: http://opensource.org/licenses/mit-license.php
 
+    Autoconf 
+    Necessary scripts to configure the installation of the plugin.
+    http://www.gnu.org/software/autoconf/autoconf.html
+    License: GNU General Public License: http://www.gnu.org/licenses/gpl.txt
+
+    Automake
+    Necessary scripts to install the plugin.
+    Project: http://www.gnu.org/software/automake/
+    License: GNU General Public License: http://www.gnu.org/licenses/gpl.txt
+
 List of Required Third-Party Dependencies
 -----------------------------------------
     Jansson
