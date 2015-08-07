@@ -1,12 +1,12 @@
 {
    "keys":[
       {
-         "keyId":"theId",
-         "secret":"0123456789abcdef"
+         "id":"theId",
+         "key":"0123456789abcdef"
       },
       {
-         "keyId":"otherId",
-         "secret":"TheOtherSecret"
+         "id":"otherId",
+         "key":"TheOtherSecret"
       }
    ]
 }

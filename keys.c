@@ -100,18 +100,18 @@ void get_key_collection(char *text, struct KeyCollection *secret_key_collection)
             return;
         }
 
-        keyId = json_object_get(key, "keyId");
+        keyId = json_object_get(key, "id");
         if(!json_is_string(keyId))
         {
-            fprintf(stderr, "error: key %zu: keyId is not a string\n", i + 1);
+            fprintf(stderr, "error: key %zu: id is not a string\n", i + 1);
             secret_key_collection = NULL;
             return;
         }
 
-        secret = json_object_get(key, "secret");
+        secret = json_object_get(key, "key");
         if(!json_is_string(secret))
         {
-            fprintf(stderr, "error: key %zu: secret is not a string\n", i + 1);
+            fprintf(stderr, "error: key %zu: key is not a string\n", i + 1);
             secret_key_collection = NULL;
             return;
         }
