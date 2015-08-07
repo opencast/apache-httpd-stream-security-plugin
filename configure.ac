@@ -7,12 +7,12 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_CHECK_PROG([HAVE_APXS], [apxs], yes)
 if test x"$HAVE_APXS" != x"yes" ; then
-    AC_MSG_ERROR([Please install apxs before installing.])
+    AC_MSG_ERROR([Please install apxs and have it available on your path before installing.])
 fi
 
 AC_CHECK_PROG([HAVE_LIBTOOL], [libtool], yes)
 if test x"$HAVE_LIBTOOL" != x"yes" ; then
-    AC_MSG_ERROR([Please install libtool before installing.])
+    AC_MSG_ERROR([Please install libtool and have it available on your path before installing.])
 fi
 
 AC_PROG_LIBTOOL
