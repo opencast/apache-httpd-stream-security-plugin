@@ -32,6 +32,11 @@ List of Included Third-Party Dependencies
     Project: http://www.gnu.org/software/automake/
     License: GNU General Public License: http://www.gnu.org/licenses/gpl.txt
 
+    mod_wsgi
+    The configure.ac and Makefile.in files in this project are based upon the ones in mod_wsgi.
+    Project: https://code.google.com/p/modwsgi/
+    License: Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0
+
 List of Required Third-Party Dependencies
 -----------------------------------------
     Jansson
