@@ -16,6 +16,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+version        = @PACKAGE_VERSION@
+tarname        = @PACKAGE_TARNAME@
+distdir        = $(tarname)-$(version)
+
 APXS = @APXS@
 
 DESTDIR = @DESTDIR@
@@ -57,6 +61,18 @@ clean :
 distclean : clean
 	-rm -f Makefile
 	-rm -f apxs libtool
+	-rm -rf $(distdir)
 
 realclean : distclean
 	-rm -f configure
+
+$(distdir) :
+	mkdir -p $(distdir)
+	cp configure $(distdir)
+	cp Makefile.in $(distdir)
+	cp *.c $(distdir)
+	cp *.h $(distdir)
+
+dist : $(distdir)
+	tar -pczf $(tarname)-$(version).tar.gz $(distdir)
+	-rm -rf $(distdir)
