@@ -25,7 +25,7 @@ In order to build the HTTPd component, some dependencies need to be installed fi
     sudo ldconfig
 
 ## Install Stream Security HTTPd Component
-    Once the dependencies are in place, the HTTPd component can be built with the following commands:
+Once the dependencies are in place, the HTTPd component can be built with the following commands:
 
     sudo yum install git
     cd /tmp
@@ -39,11 +39,13 @@ In order to build the HTTPd component, some dependencies need to be installed fi
 
 The Stream Security component is implemented as an [Apache Handler](https://httpd.apache.org/docs/2.2/handler.html). To activate the component, the handler must be added to the HTTPd configuration:
 
+```xml
 <Directory "/var/matterhorn/distribution/downloads">
     ...
     SetHandler stream-security
     ...
 </Directory>
+```
 
 Besides the handler, there are two directives which need to be defined:
 * StreamSecurityEnabled (On/Off, default On)
@@ -51,12 +53,14 @@ Besides the handler, there are two directives which need to be defined:
 
 Example:
 
+```xml
 <VirtualHost *:80>    
     ...
     StreamSecurityEnabled On
     StreamSecurityKeysPath /etc/httpd/conf/stream-security-keys.json
     ...
 </VirtualHost>
+```
 
 Additionally, there are two optional directives which can be defined:
 * StreamSecurityDebug (On/Off, default Off) - Returns an html document of the result of the request for a resource instead of actually returning the resource / denying the source. Useful for trying to determine why a request for a resource failed.
@@ -69,6 +73,7 @@ An example configuration file is contained in the component code called stream-s
 
 Example:
 
+```json
 {
   "keys":[
     {
@@ -81,4 +86,4 @@ Example:
     }
   ]
 }
-
+```
