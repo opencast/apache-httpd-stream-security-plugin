@@ -29,8 +29,27 @@
 #include "keys.h"
 #include "resource_request.h"
 
-
 #define DEFAULT_KEY_PATH "/etc/httpd/conf/stream-security-keys.json"
+
+#ifndef APACHE2_2
+  #ifdef AP_SERVER_MAJORVERSION_NUMBER
+    #ifdef AP_SERVER_MINORVERSION_NUMBER
+      #if ((AP_SERVER_MAJORVERSION_NUMBER == 2) && (AP_SERVER_MINORVERSION_NUMBER == 2))
+        #define APACHE2_2
+      #endif
+    #endif
+  #endif
+#endif
+
+#ifndef APACHE2_4
+  #ifdef AP_SERVER_MAJORVERSION_NUMBER
+    #ifdef AP_SERVER_MINORVERSION_NUMBER
+      #if ((AP_SERVER_MAJORVERSION_NUMBER == 2) && (AP_SERVER_MINORVERSION_NUMBER == 4))
+        #define APACHE2_4
+      #endif
+    #endif
+  #endif
+#endif
 
 /**
  * =============================================================
@@ -142,7 +161,13 @@ void debug_print_data(request_rec *r, char* resource, struct ResourceRequest res
     ap_rprintf(r, "<p>Signature: '%s'</p>\n", resourceRequest.signature);
     ap_rprintf(r, "<p>Key ID: '%s'</p>\n", resourceRequest.key_id);
     ap_rprintf(r, "<p>Decoded Policy: '%s'</p>\n", resourceRequest.policy.decoded_policy);
-    ap_rprintf(r, "<p>Request Client IP '%s'</p>\n", r->connection->remote_ip);
+    #ifdef APACHE2_2
+    char* clientIP = r->connection->remote_ip;
+    #endif
+    #ifdef APACHE2_4
+    char* clientIP = r->connection->client_ip;
+    #endif
+    ap_rprintf(r, "<p>Request Client IP '%s'</p>\n", clientIP);
     ap_rprintf(r, "<p>Policy Client IP: '%s'</p>\n", resourceRequest.policy.ip_address);
     ap_rprintf(r, "<p>Request Resource: '%s'</p>\n", resource);
     ap_rprintf(r, "<p>Policy Resource: '%s'</p>\n", resourceRequest.policy.resource);
@@ -187,7 +212,14 @@ static int stream_security_handler(request_rec *r) {
     }
 
     struct ResourceRequest resourceRequest;
-    get_resource_request_from_query_string(r->pool, config.strict, r->args, r->connection->remote_ip, resource, &secret_key_collection, &resourceRequest);
+    #ifdef APACHE2_2
+    char* clientIP = r->connection->remote_ip;
+    #endif
+    #ifdef APACHE2_4
+    char* clientIP = r->connection->client_ip;
+    #endif
+
+    get_resource_request_from_query_string(r->pool, config.strict, r->args, clientIP, resource, &secret_key_collection, &resourceRequest);
 
     if (config.debug) {
         debug_print_data(r, resource, resourceRequest);
