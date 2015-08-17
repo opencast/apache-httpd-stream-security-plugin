@@ -2,7 +2,7 @@
 
 This plugin brings Opencast Stream Security to the Apache HTTPd server. More information about Opencast Stream Security can be found in the [Opencast Administration Guide]().
 
-Opencast installations can use Apache HTTPd to distribute files over HTTP or HTTPS, with the verification of signed URLs carried out by a custom component available from Bitbucket: http://bitbucket.org/entwinemedia/apache-httpd-stream-security-plugin.
+Opencast installations can use Apache HTTPd to distribute files over HTTP or HTTPS, with the verification of signed URLs carried out by a custom component available from Bitbucket: http://bitbucket.org/opencast-community/apache-httpd-stream-security-plugin.
 
 ## Install Dependencies
 In order to build the HTTPd component, some dependencies need to be installed first. The example routine is based on CentOS 6 and will work similarly using alternate platforms and/or package managers.
@@ -29,7 +29,7 @@ Once the dependencies are in place, the HTTPd component can be built with the fo
 
     sudo yum install git
     cd /tmp
-    git clone http://bitbucket.org/entwinemedia/apache-httpd-stream-security-plugin.git
+    git clone http://bitbucket.org/opencast-community/apache-httpd-stream-security-plugin.git
     cd apache-httpd-stream-security-plugin
     ./configure
     make
