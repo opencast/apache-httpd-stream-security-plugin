@@ -139,10 +139,12 @@ void verify_resource_request(apr_pool_t *p, int strict, char* clientIp, char* re
     } else if (!strict) {
         apr_pool_t *mp;
         apr_pool_create(&mp, p);
-        apr_uri_t parsedURI;
-        apr_uri_parse(mp, resourceRequest->policy.resource, &parsedURI);
-        if (strcmp(resourceUri, parsedURI.path) != 0) {
-            printf("The resource requested and policy path doesn't match! %s %s %s %d\n", resourceUri, parsedURI.path, resourceRequest->policy.resource, strcmp(parsedURI.path, resourceRequest->policy.resource));
+        apr_uri_t parsedURIFromPolicy;
+        apr_uri_t parsedURIFromRequest;
+        apr_uri_parse(mp, resourceRequest->policy.resource, &parsedURIFromPolicy);
+        apr_uri_parse(mp, resourceUri, &parsedURIFromRequest);
+        if (strcmp(parsedURIFromRequest.path, parsedURIFromPolicy.path) != 0) {
+            printf("The resource requested and policy path doesn't match! %s %s %s %d\n", resourceUri, parsedURIFromPolicy.path, resourceRequest->policy.resource, strcmp(parsedURIFromPolicy.path, resourceRequest->policy.resource));
             resourceRequest->status = HTTP_FORBIDDEN;
             resourceRequest->reason = "The path to the resource doesn't match";
             return;
