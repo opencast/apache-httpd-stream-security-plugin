@@ -37,6 +37,10 @@ Once the dependencies are in place, the HTTPd component can be built with the fo
 
 ## Configure
 
+In order to use stream security load the module in the httpd config with
+
+    LoadModule stream_security_module modules/mod_stream_security.so
+
 The Stream Security component is implemented as an [Apache Handler](https://httpd.apache.org/docs/2.2/handler.html). To activate the component, the handler must be added to the HTTPd configuration:
 
 ```xml
