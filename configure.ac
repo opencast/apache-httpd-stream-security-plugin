@@ -17,7 +17,7 @@ dnl the License.
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([stream-security-httpd], [1.0.4], [support@entwinemedia.com])
+AC_INIT([stream-security-httpd], [1.0.5], [support@entwinemedia.com])
 
 AC_ARG_WITH(apxs, AC_HELP_STRING([--with-apxs=NAME],
             [name of the apxs executable [[apxs]]]),
