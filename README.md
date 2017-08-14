@@ -14,9 +14,9 @@ In order to build the HTTPd component, some dependencies need to be installed fi
 #### 2. Install Jansson For Json Support
 
     cd /tmp
-    wget http://www.digip.org/jansson/releases/jansson-2.7.tar.gz
-    tar -xvf jansson-2.7.tar.gz
-    cd jansson-2.7
+    wget http://www.digip.org/jansson/releases/jansson-2.10.tar.gz
+    tar -xvf jansson-2.10.tar.gz
+    cd jansson-2.10
     ./configure
     make
     make check
