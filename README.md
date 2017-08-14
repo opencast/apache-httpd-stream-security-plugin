@@ -102,3 +102,18 @@ Bumping the version of the plugin is a manual task and involves two steps:
 2. Rebuild the `configure` file by running the `autoconf` tool without any further parameters.
 
 Changes in both files, `configure.ac` and `configure` need to be committed to the version control system.
+
+
+### Docker based build environment
+
+The project comes with a `Dockerfile` which defines a Docker image useful for tasks during development. In order to build the image, execute this task: 
+
+    docker build -t stream-security-build-env .
+
+### Build distribution archive
+
+The distribution archive can be created leveraging the Docker image created in the previous step by executing this command:
+
+    docker run --rm -v $(pwd):/tmp -w /tmp stream-security-build-env ./configure && make dist distclean
+
+As a result, you should find the archive in your working directory.
