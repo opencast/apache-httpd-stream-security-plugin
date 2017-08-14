@@ -14,9 +14,9 @@ In order to build the HTTPd component, some dependencies need to be installed fi
 #### 2. Install Jansson For Json Support
 
     cd /tmp
-    wget http://www.digip.org/jansson/releases/jansson-2.7.tar.gz
-    tar -xvf jansson-2.7.tar.gz
-    cd jansson-2.7
+    wget http://www.digip.org/jansson/releases/jansson-2.10.tar.gz
+    tar -xvf jansson-2.10.tar.gz
+    cd jansson-2.10
     ./configure
     make
     make check
@@ -52,8 +52,8 @@ The Stream Security component is implemented as an [Apache Handler](https://http
 ```
 
 Besides the handler, there are two directives which need to be defined:
-* StreamSecurityEnabled (On/Off, default On)
-* StreamSecurityKeysPath {path to the keys file}
+* `StreamSecurityEnabled` - (`On/Off`, default `On`)
+* `StreamSecurityKeysPath` - {path to the keys file}
 
 Example:
 
@@ -67,11 +67,11 @@ Example:
 ```
 
 Additionally, there are two optional directives which can be defined:
-* StreamSecurityDebug (On/Off, default Off) - Returns an html document of the result of the request for a resource instead of actually returning the resource / denying the source. Useful for trying to determine why a request for a resource failed.
-* StreamSecurityStrict (On/Off, default On) - If turned on, the entire URL will be considered when comparing the current request for a resource against the policy, including the scheme (http, https etc.), hostname  and optional port. If turned off, only the path to the resource will be considered. So if the request is for a resource at “http://download.matterhorn.com:8080/the/full/path/video.mp4”, and strict mode is disabled, only the “/the/full/path/video.mp4” will be checked against the policy. This flexibility is useful when using things like load balancers, where the Apache hostname may not match the requested hostname or if a video player is rewriting requests, e.g. by inserting the port number.
+* `StreamSecurityDebug` - (`On/Off`, default `Off`) - Returns an html document of the result of the request for a resource instead of actually returning the resource / denying the source. Useful for trying to determine why a request for a resource failed.
+* `StreamSecurityStrict` - (`On/Off`, default `On`) - If turned on, the entire URL will be considered when comparing the current request for a resource against the policy, including the scheme (http, https etc.), hostname  and optional port. If turned off, only the path to the resource will be considered. So if the request is for a resource at `http://download.matterhorn.com:8080/the/full/path/video.mp4`, and strict mode is disabled, only the `/the/full/path/video.mp4` will be checked against the policy. This flexibility is useful when using things like load balancers, where the Apache hostname may not match the requested hostname or if a video player is rewriting requests, e.g. by inserting the port number.
 
 #### Keys File
-The final configuration involves setting the parameters for id and key for each key. The entries here need to have the same values for “id” and “key” as used for the Signing Providers configuration, because the “id” is part of the policy and the “key” is used to sign and verify the request. 
+The final configuration involves setting the parameters for id and key for each key. The entries here need to have the same values for `id` and `key` as used for the Signing Providers configuration, because the `id` is part of the policy and the `key` is used to sign and verify the request.
 
 An example configuration file is contained in the component code called stream-security-keys.json and as below:
 
@@ -102,3 +102,18 @@ Bumping the version of the plugin is a manual task and involves two steps:
 2. Rebuild the `configure` file by running the `autoconf` tool without any further parameters.
 
 Changes in both files, `configure.ac` and `configure` need to be committed to the version control system.
+
+
+### Docker based build environment
+
+The project comes with a `Dockerfile` which defines a Docker image useful for tasks during development. In order to build the image, execute this task: 
+
+    docker build -t stream-security-build-env .
+
+### Build distribution archive
+
+The distribution archive can be created leveraging the Docker image created in the previous step by executing this command:
+
+    docker run --rm -v $(pwd):/tmp -w /tmp stream-security-build-env ./configure && make dist distclean
+
+As a result, you should find the archive in your working directory.
