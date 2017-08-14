@@ -91,3 +91,14 @@ Example:
   ]
 }
 ```
+
+## Development
+
+### Bump version of plugin
+
+Bumping the version of the plugin is a manual task and involves two steps:
+
+1. Change the version in the file `configure.ac` in the `AC_INIT` section.
+2. Rebuild the `configure` file by running the `autoconf` tool without any further parameters.
+
+Changes in both files, `configure.ac` and `configure` need to be committed to the version control system.
