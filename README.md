@@ -1,6 +1,6 @@
 # Apache HTTPd Stream Security Plugin
 
-This plugin brings Opencast Stream Security to the Apache HTTPd server. More information about Opencast Stream Security can be found in the [Opencast Administration Guide]().
+This plugin brings Opencast Stream Security to the Apache HTTPd server. More information about Opencast Stream Security can be found in the [Opencast Administration Guide](https://docs.opencast.org).
 
 Opencast installations can use Apache HTTPd to distribute files over HTTP or HTTPS, with the verification of signed URLs carried out by a custom component available from Bitbucket: http://bitbucket.org/opencast-community/apache-httpd-stream-security-plugin.
 
