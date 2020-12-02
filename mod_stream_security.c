@@ -145,7 +145,9 @@ static void register_hooks(apr_pool_t *pool) {
     config.keyPath = DEFAULT_KEY_PATH;
     config.strict = 1;
     /* Hook the request handler */
-    ap_hook_handler(stream_security_handler, NULL, NULL, APR_HOOK_LAST);
+
+    static const char * const hookToCallAfter[] = { "mod_cache.c", NULL };    
+    ap_hook_handler(stream_security_handler, NULL, hookToCallAfter, APR_HOOK_FIRST); 
 }
 
 void debug_print_data(request_rec *r, char* resource, struct ResourceRequest resourceRequest) {
